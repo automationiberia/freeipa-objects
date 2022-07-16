@@ -173,8 +173,8 @@
         - ldap-devs02
         - ldap-admin01
         - ldap-admin02
-        - sperezto
-        - iaragone
+        - superadmin1
+        - superadmin2
         ipa_host: "{{ ipaserver }}"
         ipa_user: "{{ ipaadmin_principal }}"
         ipa_pass: "{{ ipaadmin_password }}"
