@@ -1,0 +1,182 @@
+---
+- hosts: localhost
+  gather_facts: no
+  become: yes
+  become_method: sudo
+  vars:
+    ansible_ssh_pipelining: no
+    ipaserver: idm.lab.example.com
+    ipaadmin_principal: admin
+    ipaadmin_password: password
+    ipaclient_domain: lab.example.com
+    ipaclient_force_join: yes
+    ipa_users:
+      - name: superadmin1
+        givenname: superadmin1
+        sn: superadmin1
+      - name: superadmin2
+        givenname: superadmin2
+        sn: superadmin2
+      - name: ldap-user01
+        givenname: user01
+        sn: user01
+      - name: ldap-user02
+        givenname: user02
+        sn: user02
+      - name: ldap-admin01
+        givenname: admin01
+        sn: admin01
+      - name: ldap-admin02
+        givenname: admin02
+        sn: admin02
+      - name: ldap-devs01
+        givenname: devs01
+        sn: devs01
+      - name: ldap-devs02
+        givenname: devs02
+        sn: devs02
+    ipa_groups:
+      - name: team-ldap-controller-admins
+      - name: team-ldap-org01-admins
+      - name: team-ldap-org01-devs
+      - name: team-ldap-org01-users
+      - name: team-ldap-org02-admins
+      - name: team-ldap-org02-devs
+      - name: team-ldap-org02-users
+      - name: team-ldap-users-crossteam
+      - name: team-ldap-auditor
+  tasks:
+    - name: Ensure user is present but don't reset password if already exists
+      #community.general.ipa_user:
+      ipa_user:
+        name: "{{ __ipa_users_item.name }}"
+        state: present
+        givenname: "{{ __ipa_users_item.givenname | default(omit) }}"
+        sn: "{{ __ipa_users_item.sn | default(omit) }}"
+        password: "redhat00"
+        ipa_host: "{{ ipaserver }}"
+        ipa_user: "{{ ipaadmin_principal }}"
+        ipa_pass: "{{ ipaadmin_password }}"
+        update_password: on_create
+        validate_certs: false
+      loop: "{{ ipa_users }}"
+      loop_control:
+        loop_var: __ipa_users_item
+
+    - name: Ensure group is present
+      #community.general.ipa_group:
+      ipa_group:
+        name: "{{ __ipa_groups_item.name }}"
+        #gidnumber: '54321'
+        ipa_host: "{{ ipaserver }}"
+        ipa_user: "{{ ipaadmin_principal }}"
+        ipa_pass: "{{ ipaadmin_password }}"
+        state: present
+        validate_certs: false
+      loop: "{{ ipa_groups }}"
+      loop_control:
+        loop_var: __ipa_groups_item
+
+    - name: Ensure that groups sysops and appops are assigned to ops but no other group
+      ipa_group:
+        name: team-ldap-users
+        group:
+        - team-ldap-controller-admins
+        - team-ldap-org01-admins
+        - team-ldap-org02-admins
+        - team-ldap-org01-users
+        - team-ldap-org02-users
+        - team-ldap-users-crossteam
+        ipa_host: "{{ ipaserver }}"
+        ipa_user: "{{ ipaadmin_principal }}"
+        ipa_pass: "{{ ipaadmin_password }}"
+        validate_certs: false
+
+    - name: Ensure that users linus and larry are assign to the group, but no other user
+      ipa_group:
+        name: team-ldap-controller-admins
+        user:
+        - sperezto
+        - iaragone
+        ipa_host: "{{ ipaserver }}"
+        ipa_user: "{{ ipaadmin_principal }}"
+        ipa_pass: "{{ ipaadmin_password }}"
+        validate_certs: false
+
+    - name: Ensure that users linus and larry are assign to the group, but no other user
+      ipa_group:
+        name: team-ldap-org01-admins
+        user:
+        - ldap-admin01
+        ipa_host: "{{ ipaserver }}"
+        ipa_user: "{{ ipaadmin_principal }}"
+        ipa_pass: "{{ ipaadmin_password }}"
+        validate_certs: false
+
+    - name: Ensure that users linus and larry are assign to the group, but no other user
+      ipa_group:
+        name: team-ldap-org01-users
+        user:
+        - ldap-user01
+        ipa_host: "{{ ipaserver }}"
+        ipa_user: "{{ ipaadmin_principal }}"
+        ipa_pass: "{{ ipaadmin_password }}"
+        validate_certs: false
+
+    - name: Ensure that users linus and larry are assign to the group, but no other user
+      ipa_group:
+        name: team-ldap-org01-devs
+        user:
+        - ldap-devs01
+        ipa_host: "{{ ipaserver }}"
+        ipa_user: "{{ ipaadmin_principal }}"
+        ipa_pass: "{{ ipaadmin_password }}"
+        validate_certs: false
+
+    - name: Ensure that users linus and larry are assign to the group, but no other user
+      ipa_group:
+        name: team-ldap-org02-users
+        user:
+        - ldap-user02
+        ipa_host: "{{ ipaserver }}"
+        ipa_user: "{{ ipaadmin_principal }}"
+        ipa_pass: "{{ ipaadmin_password }}"
+        validate_certs: false
+
+    - name: Ensure that users linus and larry are assign to the group, but no other user
+      ipa_group:
+        name: team-ldap-org02-admins
+        user:
+        - ldap-admin02
+        ipa_host: "{{ ipaserver }}"
+        ipa_user: "{{ ipaadmin_principal }}"
+        ipa_pass: "{{ ipaadmin_password }}"
+        validate_certs: false
+
+    - name: Ensure that users linus and larry are assign to the group, but no other user
+      ipa_group:
+        name: team-ldap-org02-devs
+        user:
+        - ldap-devs02
+        ipa_host: "{{ ipaserver }}"
+        ipa_user: "{{ ipaadmin_principal }}"
+        ipa_pass: "{{ ipaadmin_password }}"
+        validate_certs: false
+
+    - name: Ensure that users linus and larry are assign to the group, but no other user
+      ipa_group:
+        name: team-ldap-users-crossteam
+        user:
+        - ldap-user01
+        - ldap-user02
+        - ldap-devs01
+        - ldap-devs02
+        - ldap-admin01
+        - ldap-admin02
+        - sperezto
+        - iaragone
+        ipa_host: "{{ ipaserver }}"
+        ipa_user: "{{ ipaadmin_principal }}"
+        ipa_pass: "{{ ipaadmin_password }}"
+        validate_certs: false
+...
